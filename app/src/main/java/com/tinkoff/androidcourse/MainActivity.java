@@ -1,5 +1,8 @@
 package com.tinkoff.androidcourse;
 
+import android.graphics.Canvas;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -29,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
         recycler = findViewById(R.id.recycler_view);
         recycler.setLayoutManager(new LinearLayoutManager(this));
         recycler.setAdapter(new MyAdapter(workerList));
+        recycler.addItemDecoration(
+                new MyItemDecorator(getResources().getDrawable(R.drawable.divider)));
 
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.Callback() {
             @Override
@@ -56,10 +61,6 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                /**
-                 * Реализовать добавление тестовых работников
-                 */
-
                 Worker worker = WorkerGenerator.generateWorker();
                 workerList.add(worker);
                 if (recycler != null) {
@@ -70,12 +71,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
-        /**
-         * Реализовать адаптер, выбрать любой LayoutManager и прикрутить это всё к RecyclerView
-         *
-         * Тестовые данные для отображения генерятся WorkerGenerator
-         */
     }
 
     private List<Worker> getWorkers() {
@@ -139,6 +134,49 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public int getItemCount() {
             return workerList.size();
+        }
+    }
+
+    private static class MyItemDecorator extends RecyclerView.ItemDecoration {
+        private final Drawable drawable;
+
+        public MyItemDecorator(Drawable drawable) {
+            this.drawable = drawable;
+        }
+
+        @Override
+        public void getItemOffsets(@NonNull Rect outRect,
+                                   @NonNull View view,
+                                   @NonNull RecyclerView parent,
+                                   @NonNull RecyclerView.State state) {
+            super.getItemOffsets(outRect, view, parent, state);
+
+            if (parent.getChildAdapterPosition(view) == 0) {
+                return;
+            }
+
+            outRect.top = drawable.getIntrinsicHeight();
+        }
+
+        @Override
+        public void onDraw(@NonNull Canvas canvas,
+                           @NonNull RecyclerView parent,
+                           @NonNull RecyclerView.State state) {
+            int dividerLeft = parent.getPaddingLeft();
+            int dividerRight = parent.getWidth() - parent.getPaddingRight();
+
+            int childCount = parent.getChildCount();
+            for (int i = 0; i < childCount - 1; i++) {
+                View child = parent.getChildAt(i);
+
+                RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child.getLayoutParams();
+
+                int dividerTop = child.getBottom() + params.bottomMargin;
+                int dividerBottom = dividerTop + drawable.getIntrinsicHeight();
+
+                drawable.setBounds(dividerLeft, dividerTop, dividerRight, dividerBottom);
+                drawable.draw(canvas);
+            }
         }
     }
 }
