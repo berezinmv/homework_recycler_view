@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -30,6 +29,28 @@ public class MainActivity extends AppCompatActivity {
         recycler = findViewById(R.id.recycler_view);
         recycler.setLayoutManager(new LinearLayoutManager(this));
         recycler.setAdapter(new MyAdapter(workerList));
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.Callback() {
+            @Override
+            public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+                return makeMovementFlags(0, ItemTouchHelper.RIGHT);
+            }
+
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder viewHolder1) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int i) {
+                int position = viewHolder.getAdapterPosition();
+                workerList.remove(position);
+                recycler.getAdapter().notifyItemRemoved(position);
+            }
+        });
+
+        itemTouchHelper.attachToRecyclerView(recycler);
+
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -97,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
 
         private final List<Worker> workerList;
 
-        public MyAdapter(List<Worker>workerList) {
+        public MyAdapter(List<Worker> workerList) {
             this.workerList = workerList;
         }
 
